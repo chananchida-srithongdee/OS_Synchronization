@@ -8,14 +8,25 @@ namespace cv_lab
         private static string x = "";
         private static int exitflag = 0;
         private static int updateflag = 0;
+        private static object _Lock = new object();
+
 
         static void ThReadX(Object i)
         {
             while (exitflag == 0)
             {
-                if (x != "exit")
+                lock (_Lock)
+
                 {
-                    Console.WriteLine("***Thread {0} : x = {1}***", i, x);
+                    if (x != "exit")
+                    {
+                        if (updateflag == 1)
+                        {
+                            Console.WriteLine("***Thread {0} : x = {1}***", i, x);
+                            updateflag = 0;
+                        }
+
+                    }
                 }
             }
             Console.WriteLine("---Thread {0} exit---", i);
@@ -25,13 +36,21 @@ namespace cv_lab
             string xx;
             while (exitflag == 0)
             {
-                Console.Write("Input: ");
-                xx = Console.ReadLine();
-                if (xx == "exit")
+                lock (_Lock)
                 {
-                    exitflag = 1;
+                    Console.Write("Input: ");
+                    xx = Console.ReadLine();
+                    if (xx == "exit")
+                    {
+                        exitflag = 1;
+                    }
+                    if (updateflag == 0)
+                    {
+                        x = xx;
+                        updateflag = 1;
+                    }
                 }
-                x = xx;
+
             }
         }
         static void Main(string[] args)
