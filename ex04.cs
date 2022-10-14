@@ -12,17 +12,6 @@ namespace OS_Sync_01
         private static object _Lock = new object();
         static void ThReadX()
         {
-            // while (exitflag == 0)
-            // {
-            //     if (inputflag == true)
-            //     {
-            //         lock (_Lock)
-            //         {
-            //             inputflag = false;
-            //             Console.WriteLine("x = {0}", x);
-            //         }
-            //     }
-            // }
             while (exitflag == 0)
             {
                 lock (_Lock)
@@ -63,27 +52,6 @@ namespace OS_Sync_01
                     }
                 }
             }
-            // while (exitflag == 0)
-            // {
-            //     if (inputflag == false)
-            //     {
-            //         Console.Write("Input: ");
-            //         xx = Console.ReadLine();
-            //         if (xx == "exit")
-            //         {
-            //             exitflag = 1;
-            //             Console.WriteLine("Thread {0} is exiting...", Thread.CurrentThread.ManagedThreadId);
-            //         }
-            //         else
-            //         {
-            //             lock (_Lock)
-            //             {
-            //                 x = xx;
-            //                 inputflag = true;
-            //             }
-            //         }
-            //     }
-            // }
         }
         static void Main(string[] args)
         {
@@ -91,8 +59,6 @@ namespace OS_Sync_01
             Thread B = new Thread(new ThreadStart(ThWriteX));
             A.Start();
             B.Start();
-            // Console.WriteLine("Thread A, ID = {0}", A.ManagedThreadId); //Thread A, ID = 4
-            // Console.WriteLine("Thread B, ID =  {0}", B.ManagedThreadId); //Thread B, ID =  5
         }
     }
 }
