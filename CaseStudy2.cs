@@ -12,8 +12,6 @@ namespace OS_Problem_02
         static int Front = 0;
         static int Back = 0;
         static int Count = 0;
-        // static int de_count = 0;
-        // static int en_count = 0;
         static object _Lock = new object();
 
         static void EnQueue(int eq)
@@ -22,7 +20,6 @@ namespace OS_Problem_02
             Back++;
             Back %= 10;
             Count += 1;
-            // en_count += 1;
         }
 
         static int DeQueue()
@@ -32,7 +29,6 @@ namespace OS_Problem_02
             Front++;
             Front %= 10;
             Count -= 1;
-            // de_count += 1;
             return x;
         }
 
@@ -46,17 +42,14 @@ namespace OS_Problem_02
                 {
                     while (Count == 10)
                     {
-                        // Console.WriteLine("------Buffer is full------");
                         Monitor.Wait(_Lock);
                     }
 
                     EnQueue(i);
-                    // Console.WriteLine("Thread 01 : EnQueue {0}, TSBuffer : {1}", i, string.Join(",", TSBuffer));
                     Thread.Sleep(5);
                     Monitor.Pulse(_Lock);
                 }
             }
-            // Console.WriteLine("Thread 01 : EnQueue Done en_count = {0} de_count = {1}", en_count, de_count);
         }
 
         static void th011()
@@ -82,7 +75,6 @@ namespace OS_Problem_02
                 {
                     while (Count == 0)
                     {
-                        Console.WriteLine("------Buffer is empty------");
                         Monitor.Wait(_Lock);
                     }
                     j = DeQueue();
@@ -91,7 +83,6 @@ namespace OS_Problem_02
                     Monitor.Pulse(_Lock);
                 }
             }
-            // Console.WriteLine("Thread 02 : DeQueued Done");
         }
         static void Main(string[] args)
         {
