@@ -1,4 +1,4 @@
-﻿// 63010187 ชนัญชิดา ศรีทองดี
+﻿// 63010187 ขนัญชิดา ศรีทองดี
 // Processor	Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 2592 Mhz, 6 Core(s), 12 Logical Processor(s)
 
 using System;
@@ -12,6 +12,9 @@ namespace OS_Problem_02
         static int Front = 0;
         static int Back = 0;
         static int Count = 0;
+        // static int de_count = 0;
+        // static int en_count = 0;
+        static object _Lock = new object();
 
         static void EnQueue(int eq)
         {
@@ -19,6 +22,7 @@ namespace OS_Problem_02
             Back++;
             Back %= 10;
             Count += 1;
+            // en_count += 1;
         }
 
         static int DeQueue()
@@ -28,6 +32,7 @@ namespace OS_Problem_02
             Front++;
             Front %= 10;
             Count -= 1;
+            // de_count += 1;
             return x;
         }
 
@@ -37,9 +42,21 @@ namespace OS_Problem_02
 
             for (i = 1; i < 51; i++)
             {
-                EnQueue(i);
-                Thread.Sleep(5);
+                lock (_Lock)
+                {
+                    while (Count == 10)
+                    {
+                        // Console.WriteLine("------Buffer is full------");
+                        Monitor.Wait(_Lock);
+                    }
+
+                    EnQueue(i);
+                    // Console.WriteLine("Thread 01 : EnQueue {0}, TSBuffer : {1}", i, string.Join(",", TSBuffer));
+                    Thread.Sleep(5);
+                    Monitor.Pulse(_Lock);
+                }
             }
+            // Console.WriteLine("Thread 01 : EnQueue Done en_count = {0} de_count = {1}", en_count, de_count);
         }
 
         static void th011()
@@ -59,12 +76,22 @@ namespace OS_Problem_02
             int i;
             int j;
 
-            for (i = 0; i < 60; i++)
+            for (i = 0; i < 50; i++)
             {
-                j = DeQueue();
-                Console.WriteLine("j={0}, thread:{1}", j, t);
-                Thread.Sleep(100);
+                lock (_Lock)
+                {
+                    while (Count == 0)
+                    {
+                        Console.WriteLine("------Buffer is empty------");
+                        Monitor.Wait(_Lock);
+                    }
+                    j = DeQueue();
+                    Console.WriteLine("j={0}, thread:{1} ", j, t);
+                    Thread.Sleep(5);
+                    Monitor.Pulse(_Lock);
+                }
             }
+            // Console.WriteLine("Thread 02 : DeQueued Done");
         }
         static void Main(string[] args)
         {
