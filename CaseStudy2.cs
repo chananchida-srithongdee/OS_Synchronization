@@ -1,7 +1,4 @@
-﻿// 63010187 ขนัญชิดา ศรีทองดี
-// Processor	Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 2592 Mhz, 6 Core(s), 12 Logical Processor(s)
-
-using System;
+﻿using System;
 using System.Threading;
 
 namespace OS_Problem_02
@@ -12,7 +9,10 @@ namespace OS_Problem_02
         static int Front = 0;
         static int Back = 0;
         static int Count = 0;
-        static object _Lock = new object();
+        static bool en_ch = false;
+        static bool en_ch11 = false;
+        static object _Lock_en = new object();
+        static object _Lock_de = new object();
 
         static void EnQueue(int eq)
         {
@@ -35,68 +35,63 @@ namespace OS_Problem_02
         static void th01()
         {
             int i;
-
-            for (i = 1; i < 51; i++)
+            lock (_Lock_en)
             {
-                lock (_Lock)
+                for (i = 1; i < 51; i++)
                 {
-                    while (Count == 10)
-                    {
-                        Monitor.Wait(_Lock);
-                    }
-
+                    while (Count == 10) ;
                     EnQueue(i);
                     Thread.Sleep(5);
-                    Monitor.Pulse(_Lock);
                 }
             }
+            en_ch = true;
         }
 
         static void th011()
         {
             int i;
-
-            for (i = 100; i < 151; i++)
+            lock (_Lock_en)
             {
-                EnQueue(i);
-                Thread.Sleep(5);
+                for (i = 100; i < 151; i++)
+                {
+                    while (Count == 10) ;
+                    EnQueue(i);
+                    Thread.Sleep(5);
+                }
             }
+            en_ch11 = true;
         }
-
 
         static void th02(object t)
         {
             int i;
             int j;
-
-            for (i = 0; i < 50; i++)
+            for (i = 0; i < 60; i++)
             {
-                lock (_Lock)
-                {
-                    while (Count == 0)
-                    {
-                        Monitor.Wait(_Lock);
-                    }
+                lock (_Lock_de)
+                { 
+                    while (Count == 0 && (en_ch == false || en_ch11 == false)) ;
+                    if (Count == 0 && en_ch == true && en_ch11 == true)
+                        break;
                     j = DeQueue();
-                    Console.WriteLine("j={0}, thread:{1} ", j, t);
+                    Console.WriteLine("j={0}, thread:{1}", j, t);
                     Thread.Sleep(5);
-                    Monitor.Pulse(_Lock);
                 }
             }
         }
         static void Main(string[] args)
         {
             Thread t1 = new Thread(th01);
-            //Thread t11 = new Thread(th011);
+            Thread t11 = new Thread(th011);
             Thread t2 = new Thread(th02);
-            //Thread t21 = new Thread(th02);
-            //Thread t22 = new Thread(th02);
+            Thread t21 = new Thread(th02);
+            Thread t22 = new Thread(th02);
 
             t1.Start();
-            //t11.Start();
+            t11.Start();
             t2.Start(1);
-            //t21.Start(2);
-            //t22.Start(3);
+            t21.Start(2);
+            t22.Start(3);
         }
     }
 }
